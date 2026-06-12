@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050a14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>WC26 Rikki vs Reece</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#050a14;color:#e5e7eb;padding:12px;max-width:640px;margin:0 auto;padding-bottom:80px}
+h1{font-size:18px;text-align:center;margin:8px 0 12px;font-weight:700}
+.tabs{position:sticky;top:0;display:flex;gap:6px;background:#050a14;padding:8px 0 12px;z-index:100}
+.tab{flex:1;padding:12px 8px;border:1px solid #1f2937;background:#111827;color:#9ca3af;border-radius:10px;text-align:center;font-weight:600;font-size:13px;cursor:pointer}
+.tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.section{display:none}
+.section.active{display:block}
+.card{background:#0f172a;border:1px solid #1f2937;border-radius:14px;padding:14px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 4px;text-align:center;border-bottom:1px solid #1f2937}
+th{color:#9ca3af;font-weight:600;font-size:11px;text-transform:uppercase}
+.gold{color:#fbbf24;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.fixture{font-weight:600;font-size:15px;line-height:1.3;flex:1}
+.date{font-size:11px;color:#9ca3af;margin-top:2px}
+.pill{display:inline-block;padding:3px 7px;border-radius:5px;font-size:10px;font-weight:600;margin-left:6px}
+.pill.ko{background:#7c3aed}
+.pill.done{background:#059669}
+.pill.pts{background:#2563eb;color:#fff}
+.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.input-group{display:flex;flex-direction:column}
+.input-group label{font-size:10px;color:#9ca3af;margin-bottom:4px;text-align:center;text-transform:uppercase}
+.input-group input{width:100%;padding:10px 6px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;text-align:center;font-size:16px;font-weight:600}
+.input-group input:focus{outline:none;border-color:#2563eb;background:#111827}
+.search{width:100%;padding:12px;background:#111827;border:1px solid #1f2937;border-radius:10px;color:#fff;margin-bottom:12px;font-size:15px}
+.search:focus{outline:none;border-color:#2563eb}
+.edit{cursor:pointer;margin-left:6px;opacity:.6;font-size:16px}
+.edit:active{opacity:1}
+.empty{text-align:center;color:#6b7280;padding:40px 20px;font-size:14px}
+.save-indicator{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#6ee7b7;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity.3s;pointer-events:none}
+.save-indicator.show{opacity:1}
+</style>
+</head>
+<body>
+<h1>RIKKI vs REECE — WC26</h1>
+
+<div class="tabs">
+  <div class="tab active" data-tab="ladder">LADDER</div>
+  <div class="tab" data-tab="games">GAMES</div>
+  <div class="tab" data-tab="history">HISTORY</div>
+</div>
+
+<div id="ladder" class="section active">
+  <div class="card">
+    <table id="ladderTable">
+      <thead><tr><th>#</th><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Ex</th><th>Pts</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="games" class="section">
+  <input class="search" id="searchGames" placeholder="Search team or date...">
+  <div id="gamesList"></div>
+</div>
+
+<div id="history" class="section">
+  <input class="search" id="searchHistory" placeholder="Search completed games...">
+  <div id="historyList"></div>
+</div>
+
+<div class="save-indicator" id="saveIndicator">Saved</div>
+
+<script>
+const STORAGE_KEY = 'wc26_rikki_reece_v1';
+
+let data = {
+  matches: [
+    {"id":1,"date":"2026-06-11","fixture":"Mexico v South Africa","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":2,"date":"2026-06-11","fixture":"Korea Republic v Czechia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":3,"date":"2026-06-12","fixture":"Canada v Bosnia and Herzegovina","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":4,"date":"2026-06-12","fixture":"USA v Paraguay","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":5,"date":"2026-06-13","fixture":"Haiti v Scotland","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":6,"date":"2026-06-13","fixture":"Australia v Türkiye","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":7,"date":"2026-06-13","fixture":"Brazil v Morocco","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":8,"date":"2026-06-13","fixture":"Qatar v Switzerland","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":9,"date":"2026-06-14","fixture":"Côte d'Ivoire v Ecuador","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":10,"date":"2026-06-14","fixture":"Germany v Curaçao","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":11,"date":"2026-06-14","fixture":"Netherlands v Japan","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":12,"date":"2026-06-14","fixture":"Sweden v Tunisia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":13,"date":"2026-06-15","fixture":"Saudi Arabia v Uruguay","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":14,"date":"2026-06-15","fixture":"Spain v Cabo Verde","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":15,"date":"2026-06-15","fixture":"IR Iran v New Zealand","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":16,"date":"2026-06-15","fixture":"Belgium v Egypt","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":17,"date":"2026-06-16","fixture":"France v Senegal","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":18,"date":"2026-06-16","fixture":"Iraq v Norway","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":19,"date":"2026-06-16","fixture":"Argentina v Algeria","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":20,"date":"2026-06-16","fixture":"Austria v Jordan","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":21,"date":"2026-06-17","fixture":"Ghana v Panama","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":22,"date":"2026-06-17","fixture":"England v Croatia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":23,"date":"2026-06-17","fixture":"Portugal v Congo DR","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":24,"date":"2026-06-17","fixture":"Uzbekistan v Colombia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":25,"date":"2026-06-18","fixture":"Czechia v South Africa","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":26,"date":"2026-06-18","fixture":"Switzerland v Bosnia and Herzegovina","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":27,"date":"2026-06-18","fixture":"Canada v Qatar","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":28,"date":"2026-06-18","fixture":"Mexico v Korea Republic","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":29,"date":"2026-06-19","fixture":"Brazil v Haiti","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":30,"date":"2026-06-19","fixture":"Scotland v Morocco","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":31,"date":"2026-06-19","fixture":"Türkiye v Paraguay","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":32,"date":"2026-06-19","fixture":"USA v Australia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":33,"date":"2026-06-20","fixture":"Germany v Côte d'Ivoire","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":34,"date":"2026-06-20","fixture":"Ecuador v Curaçao","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":35,"date":"2026-06-20","fixture":"Netherlands v Sweden","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":36,"date":"2026-06-20","fixture":"Tunisia v Japan","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":37,"date":"2026-06-21","fixture":"Uruguay v Cabo Verde","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":38,"date":"2026-06-21","fixture":"Spain v Saudi Arabia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":39,"date":"2026-06-21","fixture":"Belgium v IR Iran","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":40,"date":"2026-06-21","fixture":"New Zealand v Egypt","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":41,"date":"2026-06-22","fixture":"Norway v Senegal","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":42,"date":"2026-06-22","fixture":"France v Iraq","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":43,"date":"2026-06-22","fixture":"Argentina v Austria","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":44,"date":"2026-06-22","fixture":"Jordan v Algeria","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":45,"date":"2026-06-23","fixture":"England v Ghana","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":46,"date":"2026-06-23","fixture":"Panama v Croatia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":47,"date":"2026-06-23","fixture":"Portugal v Uzbekistan","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":48,"date":"2026-06-23","fixture":"Colombia v Congo DR","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":49,"date":"2026-06-24","fixture":"Scotland v Brazil","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":50,"date":"2026-06-24","fixture":"Morocco v Haiti","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":51,"date":"2026-06-24","fixture":"Switzerland v Canada","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":52,"date":"2026-06-24","fixture":"Bosnia and Herzegovina v Qatar","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":53,"date":"2026-06-24","fixture":"Czechia v Mexico","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":54,"date":"2026-06-24","fixture":"South Africa v Korea Republic","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":55,"date":"2026-06-25","fixture":"Curaçao v Côte d'Ivoire","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":56,"date":"2026-06-25","fixture":"Ecuador v Germany","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":57,"date":"2026-06-25","fixture":"Japan v Sweden","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":58,"date":"2026-06-25","fixture":"Tunisia v Netherlands","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":59,"date":"2026-06-25","fixture":"Türkiye v USA","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":60,"date":"2026-06-25","fixture":"Paraguay v Australia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":61,"date":"2026-06-26","fixture":"Norway v France","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":62,"date":"2026-06-26","fixture":"Senegal v Iraq","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":63,"date":"2026-06-26","fixture":"Egypt v IR Iran","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":64,"date":"2026-06-26","fixture":"New Zealand v Belgium","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":65,"date":"2026-06-26","fixture":"Cabo Verde v Saudi Arabia","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":66,"date":"2026-06-26","fixture":"Uruguay v Spain","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":67,"date":"2026-06-27","fixture":"Panama v England","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":68,"date":"2026-06-27","fixture":"Croatia v Ghana","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":69,"date":"2026-06-27","fixture":"Algeria v Austria","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":70,"date":"2026-06-27","fixture":"Jordan v Argentina","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":71,"date":"2026-06-27","fixture":"Colombia v Portugal","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":72,"date":"2026-06-27","fixture":"Congo DR v Uzbekistan","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":73,"date":"2026-06-28","fixture":"R32: Group A RU v Group B RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":74,"date":"2026-06-29","fixture":"R32: Group E W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":75,"date":"2026-06-29","fixture":"R32: Group F W v Group C RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":76,"date":"2026-06-29","fixture":"R32: Group C W v Group F RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":77,"date":"2026-06-30","fixture":"R32: Group I W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":78,"date":"2026-06-30","fixture":"R32: Group E RU v Group I RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":79,"date":"2026-06-30","fixture":"R32: Group A W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":80,"date":"2026-07-01","fixture":"R32: Group L W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":81,"date":"2026-07-01","fixture":"R32: Group D W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":82,"date":"2026-07-01","fixture":"R32: Group G W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":83,"date":"2026-07-02","fixture":"R32: Group K RU v Group L RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":84,"date":"2026-07-02","fixture":"R32: Group H W v Group J RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":85,"date":"2026-07-02","fixture":"R32: Group B W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":86,"date":"2026-07-03","fixture":"R32: Group J W v Group H RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":87,"date":"2026-07-03","fixture":"R32: Group K W v 3rd place","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":88,"date":"2026-07-03","fixture":"R32: Group D RU v Group G RU","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":89,"date":"2026-07-04","fixture":"R16: Winner 74 v Winner 77","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":90,"date":"2026-07-04","fixture":"R16: Winner 73 v Winner 75","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":91,"date":"2026-07-05","fixture":"R16: Winner 76 v Winner 78","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":92,"date":"2026-07-05","fixture":"R16: Winner 79 v Winner 80","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":93,"date":"2026-07-06","fixture":"R16: Winner 83 v Winner 84","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":94,"date":"2026-07-06","fixture":"R16: Winner 81 v Winner 82","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":95,"date":"2026-07-07","fixture":"R16: Winner 86 v Winner 88","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":96,"date":"2026-07-07","fixture":"R16: Winner 85 v Winner 87","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":97,"date":"2026-07-09","fixture":"QF: Winner 89 v Winner 90","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":98,"date":"2026-07-10","fixture":"QF: Winner 93 v Winner 94","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":99,"date":"2026-07-11","fixture":"QF: Winner 91 v Winner 92","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":100,"date":"2026-07-11","fixture":"QF: Winner 95 v Winner 96","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":101,"date":"2026-07-14","fixture":"SF: Winner 97 v Winner 98","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":102,"date":"2026-07-15","fixture":"SF: Winner 99 v Winner 100","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":103,"date":"2026-07-18","fixture":"3rd Place: Loser 101 v Loser 102","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null},
+    {"id":104,"date":"2026-07-19","fixture":"Final: Winner 101 v Winner 102","rikkiH":null,"rikkiA":null,"reeceH":null,"reeceA":null,"actualH":null,"actualA":null}
+  ]
+};
+
+function loadData(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      if(parsed.matches && parsed.matches.length === 104) data = parsed;
+    }catch(e){}
+  }
+}
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showSave();
+}
+
+function showSave(){
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1000);
+}
+
+function calcPts(m){
+  if(m.actualH==null||m.actualA==null) return {rikki:0,reece:0};
+  const ar = m.actualH>m.actualA?'H':m.actualH<m.actualA?'A':'D';
+  const pr = m.rikkiH>m.rikkiA?'H':m.rikkiH<m.rikkiA?'A':'D';
+  const er = m.reeceH>m.reeceA?'H':m.reeceH<m.reeceA?'A':'D';
+  let r = ar===pr?(ar==='D'?1:3):0, e = ar===er?(ar==='D'?1:3):0;
+  if(m.rikkiH===m.actualH&&m.rikkiA===m.actualA) r+=2;
+  if(m.reeceH===m.actualH&&m.reeceA===m.actualA) e+=2;
+  return {rikki:r,reece:e};
+}
+
+function render(){
+  renderLadder();
+  renderGames();
+  renderHistory();
+}
+
+function renderLadder(){
+  const s = {Rikki:{P:0,W:0,D:0,L:0,Ex:0,Pts:0},Reece:{P:0,W:0,D:0,L:0,Ex:0,Pts:0}};
+  data.matches.forEach(m=>{
+    if(m.actualH==null||m.actualA==null) return;
+    const c = calcPts(m);
+    ['Rikki','Reece'].forEach(p=>{
+      const st = s[p], pts = p==='Rikki'?c.rikki:c.reece;
+      st.P++; st.Pts+=pts;
+      if((p==='Rikki'&&m.rikkiH===m.actualH&&m.rikkiA===m.actualA)||(p==='Reece'&&m.reeceH===m.actualH&&m.reeceA===m.actualA)) st.Ex++;
+      const pr = p==='Rikki'?(m.rikkiH>m.rikkiA?'H':m.rikkiH<m.rikkiA?'A':'D'):(m.reeceH>m.reeceA?'H':m.reeceH<m.reeceA?'A':'D');
+      const ar = m.actualH>m.actualA?'H':m.actualH<m.actualA?'A':'D';
+      if(pr===ar) ar==='D'?st.D++:st.W++; else st.L++;
+    });
+  });
+  const rows = Object.entries(s).map(([n,x])=>({n,...x})).sort((a,b)=>b.Pts-a.Pts||b.Ex-a.Ex||a.n.localeCompare(b.n));
+  document.querySelector('#ladderTable tbody').innerHTML = rows.map((r,i)=>`
+    <tr><td>${i+1}</td><td class="${i===0?'gold':''}">${r.n}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.Ex}</td><td><b>${r.Pts}</b></td></tr>
+  `).join('');
+}
+
+function matchCard(m,editable=true){
+  const c = calcPts(m), ko = m.id>=73, done = m.actualH!=null&&m.actualA!=null;
+  return `<div class="card" data-id="${m.id}">
+    <div class="row">
+      <div style="flex:1">
+        <div class="fixture">${m.fixture}
+          ${ko?'<span class="pill ko">KO</span>':''}
+          ${done?'<span class="pill done">DONE</span>':''}
+          ${ko&&editable?`<span class="edit" onclick="editFixture(${m.id})">✏️</span>`:''}
+        </div>
+        <div class="date">${m.date}</div>
+      </div>
+    </div>
+    <div class="inputs">
+      <div class="input-group"><label>Rikki H</label><input type="number" min="0" value="${m.rikkiH??''}" ${!editable?'disabled':''} onchange="updateScore(${m.id},'rikkiH',this.value)"></div>
+      <div class="input-group"><label>Rikki A</label><input type="number" min="0" value="${m.rikkiA??''}" ${!editable?'disabled':''} onchange="updateScore(${m.id},'rikkiA',this.value)"></div>
+      <div class="input
